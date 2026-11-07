@@ -1,0 +1,644 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Saath Ka Diya</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Yatra+One&display=swap">
+<style>
+  /* Layout: full-bleed night scene. Text sits bottom-left like a note on a stage, controls top-right, caption top-left. */
+  :root {
+    --night: #0d0a1f;
+    --dusk: #2a1250;
+    --marigold: #ffb320;
+    --rani: #d81b60;
+    --cream: #fff1d6;
+    --ink: #1b1030;
+    --display: 'Yatra One', Georgia, 'Times New Roman', serif;
+    --body: 'Hind', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--cream);
+    font-family: var(--body);
+    font-size: 16px;
+    overflow: hidden;
+  }
+  #stage { position: relative; height: 100%; overflow: hidden; background: var(--night); }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .gutter {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .eyebrow { font-size: .78rem; letter-spacing: .22em; text-transform: uppercase; color: var(--marigold); font-weight: 600; margin: 0; }
+  h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; }
+  p { line-height: 1.55; margin: 0; max-width: 40ch; }
+
+  .btn {
+    font: 600 1rem var(--body);
+    background: var(--marigold);
+    color: var(--ink);
+    border: 0;
+    border-radius: 4px;
+    padding: .8rem 1.4rem;
+    min-height: 44px;
+    cursor: pointer;
+  }
+  .btn.ghost { background: rgba(13,10,31,.55); color: var(--cream); border: 1px solid rgba(255,241,214,.35); }
+  .btn.sm { padding: .4rem .85rem; font-size: .85rem; min-height: 40px; }
+  .btn:focus-visible, input:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+
+  #tools { position: absolute; top: 12px; left: 0; right: 0; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; z-index: 3; }
+
+  #intro {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+    padding-block: 110px 32px;
+    background: linear-gradient(to top, rgba(13,10,31,.94) 35%, rgba(13,10,31,0));
+  }
+  #intro .box { max-width: 30rem; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  #intro h1 { font-size: clamp(2.5rem, 10vw, 4.2rem); line-height: 1.02; }
+  #intro p { color: rgba(255,241,214,.86); }
+
+  #caption { position: absolute; top: 62px; left: 0; right: 0; z-index: 2; pointer-events: none; animation: rise .9s ease both; }
+  #caption h2 { font-size: clamp(2rem, 8vw, 3.4rem); line-height: 1.05; color: var(--marigold); }
+  #caption p { margin-top: 6px; color: rgba(255,241,214,.85); }
+
+  #giftbar { position: absolute; left: 0; right: 0; bottom: 0; padding-block: 28px; z-index: 2; animation: rise .8s ease both; }
+  #giftbtn { animation: pulse 2.2s ease-out infinite; font-size: 1.1rem; padding: .95rem 1.7rem; }
+
+  .modal {
+    position: absolute; inset: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8,5,20,.7);
+    padding-block: 16px;
+  }
+  .sheet {
+    background: var(--cream); color: var(--ink);
+    width: 100%; max-width: 28rem; max-height: 100%; overflow: auto;
+    padding: 1.7rem 1.5rem; border-radius: 6px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 0 6px rgba(255,179,32,.9) inset;
+    display: flex; flex-direction: column; gap: 14px; min-width: 0;
+    animation: rise .6s ease both;
+  }
+  .sheet .eyebrow { color: #b4231f; }
+  .sheet h2 { font-size: clamp(1.7rem, 7vw, 2.3rem); line-height: 1.1; }
+  .sheet p { max-width: none; }
+  .sign { font-family: var(--display); font-size: 1.25rem; margin-top: 4px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sheet .btn.ghost { background: transparent; color: var(--ink); border-color: rgba(27,16,48,.4); }
+  label { font-size: .82rem; font-weight: 600; letter-spacing: .04em; display: block; margin-bottom: 4px; }
+  input[type="text"] {
+    width: 100%; box-sizing: border-box; font: 500 1rem var(--body); color: var(--ink);
+    background: #fff; border: 1px solid rgba(27,16,48,.35); border-radius: 4px; padding: .65rem .75rem; min-height: 44px;
+  }
+  .hint { font-size: .85rem; color: #4a3a63; }
+  #mkStatus { min-height: 1.2em; font-size: .85rem; color: #1d6b3a; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,179,32,.6); } 70%, 100% { box-shadow: 0 0 0 18px rgba(255,179,32,0); } }
+  @media (prefers-reduced-motion: reduce) {
+    #caption, #giftbar, .sheet { animation: none; }
+    #giftbtn { animation: none; }
+  }
+</style>
+
+<div id="stage">
+  <canvas id="scene" role="img" aria-label="Raat ka aasmaan. Do dost saath mein ek diya jalate hain aur aatishbaazi shuru hoti hai."></canvas>
+
+  <div id="tools" class="gutter">
+    <button class="btn ghost sm" id="replay" hidden>Phir se dekho</button>
+    <button class="btn ghost sm" id="mute" aria-pressed="false">Awaaz chalu</button>
+  </div>
+
+  <div id="intro" class="gutter">
+    <div class="box">
+      <p class="eyebrow">Shubh Deepawali</p>
+      <h1><span class="f">Naina</span>, ruko zara.</h1>
+      <p><span class="s">Raghav</span> aur tum saath mein ek diya jalane aa rahe ho. Bas ek minute lagega.</p>
+      <button class="btn" id="startBtn">Chalo, shuru karein</button>
+    </div>
+  </div>
+
+  <div id="caption" class="gutter" hidden>
+    <h2>Shubh Deepawali</h2>
+    <p><span class="f">Naina</span> aur <span class="s">Raghav</span>, saath mein.</p>
+  </div>
+
+  <div id="giftbar" class="gutter" hidden>
+    <button class="btn" id="giftbtn">Surprise kholo</button>
+  </div>
+
+  <div id="card" class="modal gutter" role="dialog" aria-modal="true" aria-labelledby="cardTitle" hidden>
+    <div class="sheet">
+      <p class="eyebrow">Tumhare liye</p>
+      <h2 id="cardTitle">Shubh Deepawali, <span class="f">Naina</span></h2>
+      <p>Ye diya humne saath mein jalaya, aur ye chhota sa surprise meri taraf se. Is Diwali ghar mein roshni ho, dil mein sukoon ho, aur plate mein khoob saari mithai.</p>
+      <p>Tum jaise dost ke hote andhera kaunsa raasta rokega. Patakhe dhyaan se, mithai dil kholke.</p>
+      <p class="sign">Tumhara dost, <span class="s">Raghav</span></p>
+      <div class="row">
+        <button class="btn" id="closeCard">Shukriya</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="maker" class="modal gutter" role="dialog" aria-modal="true" aria-labelledby="makerTitle" hidden>
+    <div class="sheet">
+      <p class="eyebrow">Dost ke liye</p>
+      <h2 id="makerTitle">Apna link banao</h2>
+      <div>
+        <label for="mkFriend">Dost ka naam</label>
+        <input type="text" id="mkFriend" placeholder="Naina" maxlength="24" autocomplete="off">
+      </div>
+      <div>
+        <label for="mkSender">Tumhara naam</label>
+        <input type="text" id="mkSender" placeholder="Raghav" maxlength="24" autocomplete="off">
+      </div>
+      <div>
+        <label for="mkLink">Link</label>
+        <input type="text" id="mkLink" readonly>
+      </div>
+      <p class="hint">Pehle is page ko Share karo, phir yahi link dost ko bhejo. Naam link ke andar hi juda hota hai, isliye har dost ke liye alag link banao.</p>
+      <div id="mkStatus" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn" id="mkCopy">Link copy karo</button>
+        <button class="btn ghost" id="closeMaker">Band karo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const cv = $('scene'), ctx = cv.getContext('2d');
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const sm = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+  const eo = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+  const TAU = Math.PI * 2;
+  const REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  let W = 0, H = 0, dpr = 1, s = 1, groundY = 0, cx = 0, clock = 0;
+  let stars = [], blds = [], smalls = [];
+  let ev = {}, fw = [], flashes = [], petals = [];
+  let nextBurst = 0, last = performance.now();
+  const names = { f: 'Naina', s: 'Raghav' };
+  const state = { started: false, t: 0, muted: false };
+
+  /* ---------- names from the link hash: friend--sender ---------- */
+  function cap(slug) {
+    return slug.split('-').filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  function slug(v) {
+    return String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function applyNames() {
+    document.querySelectorAll('.f').forEach(e => { e.textContent = names.f; });
+    document.querySelectorAll('.s').forEach(e => { e.textContent = names.s; });
+  }
+  function readHash() {
+    let h = '';
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) { h = ''; }
+    h = h.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const parts = h.split('--');
+    names.f = cap(parts[0] || '') || 'Naina';
+    names.s = cap(parts[1] || '') || 'Raghav';
+    applyNames();
+  }
+
+  /* ---------- audio ---------- */
+  let ac = null, master = null, noiseBuf = null;
+  function audioInit() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ac = ac || new AC();
+      if (ac.state === 'suspended') ac.resume();
+      if (!master) { master = ac.createGain(); master.gain.value = 0.5; master.connect(ac.destination); }
+    } catch (e) { ac = null; }
+  }
+  function tone(f, when, dur, type, vol) {
+    if (!ac || state.muted) return;
+    try {
+      const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + when;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.05);
+    } catch (e) {}
+  }
+  function pop() {
+    if (!ac || state.muted) return;
+    try {
+      if (!noiseBuf) {
+        const len = Math.floor(ac.sampleRate * 0.45);
+        noiseBuf = ac.createBuffer(1, len, ac.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+      }
+      const src = ac.createBufferSource(), lp = ac.createBiquadFilter(), g = ac.createGain(), n = ac.currentTime;
+      src.buffer = noiseBuf; lp.type = 'lowpass'; lp.frequency.value = rnd(500, 1400);
+      g.gain.setValueAtTime(0.3, n); g.gain.exponentialRampToValueAtTime(0.001, n + 0.42);
+      src.connect(lp); lp.connect(g); g.connect(master); src.start(n);
+    } catch (e) {}
+  }
+
+  /* ---------- static scene pieces ---------- */
+  function mulberry(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function buildStatic() {
+    const r = mulberry(7);
+    stars = [];
+    for (let i = 0; i < 90; i++) stars.push({ x: r() * W, y: r() * groundY * 0.8, r: r() * 1.3 + 0.3, p: r() * 6.28, sp: 1 + r() * 2 });
+    blds = [];
+    let x = -20;
+    while (x < W + 20) {
+      const w = (30 + r() * 44) * s, h = (26 + r() * 90) * s, kr = r();
+      const b = { x, w, h, kind: kr < 0.2 ? 1 : kr < 0.35 ? 2 : 0, win: [] };
+      const cols = Math.max(1, Math.floor(w / (13 * s))), rows = Math.max(1, Math.floor((h - 8 * s) / (15 * s)));
+      for (let c = 0; c < cols; c++) for (let q = 0; q < rows; q++) {
+        if (r() < 0.45) b.win.push({ x: x + 6 * s + c * (w - 12 * s) / cols + 2 * s, y: groundY - h + 8 * s + q * 15 * s, d: r() * 2.2 });
+      }
+      blds.push(b);
+      x += w + r() * 6 * s;
+    }
+    smalls = [];
+    for (let i = 0; i < 8; i++) {
+      const d = (130 + i * 62) * s;
+      for (const sg of [-1, 1]) {
+        const px = cx + sg * d;
+        if (px > -20 && px < W + 20) smalls.push({ x: px, y: groundY + (3 + i * 2) * s, i, k: (0.55 + i * 0.03) * s, ph: i * 1.7 + (sg > 0 ? 1 : 0) });
+      }
+    }
+  }
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    if (!W || !H) return;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    s = clamp(Math.min(W / 520, H / 640), 0.62, 1.35);
+    groundY = Math.round(H * (H > W * 1.1 ? 0.6 : 0.76));
+    cx = W / 2;
+    buildStatic();
+  }
+
+  /* ---------- drawing ---------- */
+  function glow(x, y, r, a) {
+    if (a <= 0 || r < 1) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(255,160,50,' + a + ')');
+    g.addColorStop(1, 'rgba(255,120,30,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function drawSky(ign) {
+    const g = ctx.createLinearGradient(0, 0, 0, groundY);
+    g.addColorStop(0, '#05030d'); g.addColorStop(0.6, '#1a0c38'); g.addColorStop(1, '#4b1a52');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, groundY + 2);
+    if (ign > 0) {
+      const rg = ctx.createRadialGradient(cx, groundY, 0, cx, groundY, Math.max(W, H) * 0.7);
+      rg.addColorStop(0, 'rgba(255,130,40,' + (0.22 * ign) + ')'); rg.addColorStop(1, 'rgba(255,130,40,0)');
+      ctx.fillStyle = rg; ctx.fillRect(0, 0, W, groundY + 2);
+    }
+    for (const st of stars) {
+      const a = 0.35 + 0.65 * Math.abs(Math.sin(clock * st.sp + st.p));
+      ctx.fillStyle = 'rgba(255,244,220,' + (a * 0.8) + ')';
+      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, TAU); ctx.fill();
+    }
+  }
+  function drawSkyline() {
+    for (const b of blds) {
+      ctx.fillStyle = '#150b2b';
+      ctx.fillRect(b.x, groundY - b.h, b.w, b.h + 2);
+      if (b.kind === 1) {
+        ctx.beginPath(); ctx.arc(b.x + b.w / 2, groundY - b.h, b.w * 0.32, Math.PI, 0); ctx.fill();
+        ctx.fillRect(b.x + b.w / 2 - s, groundY - b.h - b.w * 0.32 - 9 * s, 2 * s, 9 * s);
+      } else if (b.kind === 2) {
+        ctx.beginPath(); ctx.moveTo(b.x + b.w * 0.15, groundY - b.h); ctx.lineTo(b.x + b.w / 2, groundY - b.h - b.w * 0.7); ctx.lineTo(b.x + b.w * 0.85, groundY - b.h); ctx.fill();
+      }
+      for (const w of b.win) {
+        if (state.t > 9 + w.d) {
+          const fl = 0.75 + 0.25 * Math.sin(clock * 3 + w.d * 9);
+          ctx.fillStyle = 'rgba(255,190,90,' + (0.85 * fl) + ')';
+        } else ctx.fillStyle = 'rgba(255,190,90,0.06)';
+        ctx.fillRect(w.x, w.y, 4 * s, 6 * s);
+      }
+    }
+  }
+  function drawGround(ign) {
+    const g = ctx.createLinearGradient(0, groundY, 0, H);
+    g.addColorStop(0, '#2b1640'); g.addColorStop(1, '#09050f');
+    ctx.fillStyle = g; ctx.fillRect(0, groundY, W, H - groundY);
+    if (ign > 0) {
+      ctx.save(); ctx.translate(cx, groundY + 4 * s); ctx.scale(1, 0.28);
+      const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, 360 * s);
+      rg.addColorStop(0, 'rgba(255,150,50,' + (0.5 * ign) + ')'); rg.addColorStop(1, 'rgba(255,150,50,0)');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, 360 * s, 0, TAU); ctx.fill();
+      ctx.restore();
+    }
+  }
+  function drawRangoli(ign) {
+    ctx.save();
+    ctx.globalAlpha = 0.3 + 0.7 * ign;
+    ctx.translate(cx, groundY + 10 * s); ctx.scale(1, 0.24);
+    const R = 175 * s, cols = ['#d81b60', '#ffb320', '#ff7a1a', '#fff1d6'];
+    for (let k = 0; k < 36; k++) {
+      const an = k / 36 * TAU; ctx.fillStyle = cols[k % 4];
+      ctx.beginPath(); ctx.arc(Math.cos(an) * R, Math.sin(an) * R, 4.5 * s, 0, TAU); ctx.fill();
+    }
+    for (let k = 0; k < 12; k++) {
+      ctx.save(); ctx.rotate(k / 12 * TAU); ctx.fillStyle = cols[k % 3];
+      ctx.beginPath(); ctx.ellipse(R * 0.66, 0, R * 0.24, R * 0.1, 0, 0, TAU); ctx.fill(); ctx.restore();
+    }
+    for (let k = 0; k < 8; k++) {
+      ctx.save(); ctx.rotate(k / 8 * TAU + 0.2); ctx.fillStyle = cols[(k + 1) % 4];
+      ctx.beginPath(); ctx.ellipse(R * 0.34, 0, R * 0.14, R * 0.06, 0, 0, TAU); ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle = '#fff1d6'; ctx.beginPath(); ctx.arc(0, 0, R * 0.14, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function flame(x, y, k, lit, ph) {
+    const fh = 36 * k * lit * (1 + 0.07 * Math.sin(clock * 11 + ph) + 0.04 * Math.sin(clock * 17 + ph * 2));
+    if (fh < 1) return;
+    const sw = Math.sin(clock * 7 + ph) * 2.2 * k * lit, w = 9 * k * lit;
+    ctx.save(); ctx.translate(x, y);
+    ctx.beginPath(); ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-w, -fh * 0.25, -w * 0.8, -fh * 0.65, sw, -fh);
+    ctx.bezierCurveTo(w * 0.8, -fh * 0.65, w, -fh * 0.25, 0, 0);
+    ctx.closePath();
+    const fg = ctx.createLinearGradient(0, 0, 0, -fh);
+    fg.addColorStop(0, '#fff6d0'); fg.addColorStop(0.35, '#ffc13a'); fg.addColorStop(1, 'rgba(255,100,20,0.9)');
+    ctx.fillStyle = fg; ctx.fill();
+    ctx.restore();
+    glow(x, y - fh * 0.4, 70 * k * lit, 0.45 * lit);
+  }
+  function diya(x, y, k, lit, ph) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    const g = ctx.createLinearGradient(0, -18, 0, 4);
+    g.addColorStop(0, '#d0652d'); g.addColorStop(1, '#7c2c12');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-32, -16);
+    ctx.bezierCurveTo(-30, -2, -16, 3, 0, 3); ctx.bezierCurveTo(16, 3, 30, -2, 32, -16); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e9843f'; ctx.beginPath(); ctx.ellipse(0, -16, 32, 7, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#4a1d0c'; ctx.beginPath(); ctx.ellipse(0, -15.5, 25, 4.6, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255,' + (170 + lit * 40 | 0) + ',60,' + (0.5 + 0.4 * lit) + ')';
+    ctx.beginPath(); ctx.ellipse(0, -15, 20, 3.2, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#2a1208'; ctx.fillRect(-1.5, -20, 3, 6);
+    ctx.restore();
+    if (lit > 0) flame(x, y - 21 * k, k, lit, ph);
+  }
+  function arm(x1, y1, x2, y2, col, skin) {
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col; ctx.lineWidth = 9 * s;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.quadraticCurveTo((x1 + x2) / 2, (y1 + y2) / 2 + 10 * s, x2, y2); ctx.stroke();
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x2, y2, 4.6 * s, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function figure(x, dir, P, t) {
+    const hipY = groundY - 62 * s, sw = Math.sin(P.phase) * P.amp;
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = P.pants; ctx.lineWidth = 11 * s;
+    for (const k of [1, -1]) {
+      const fx = x + dir * k * sw * 20 * s, fy = groundY - Math.max(0, -k * Math.cos(P.phase)) * 7 * s * P.amp;
+      ctx.beginPath(); ctx.moveTo(x, hipY); ctx.lineTo(fx, fy - 3 * s); ctx.stroke();
+      ctx.fillStyle = '#120a1f'; ctx.beginPath(); ctx.ellipse(fx + dir * 3 * s, fy - 2 * s, 8 * s, 4 * s, 0, 0, TAU); ctx.fill();
+    }
+    ctx.restore();
+
+    const a = P.lean * dir;
+    const shx = x + 52 * s * Math.sin(a), shy = hipY - 52 * s * Math.cos(a);
+    const wickY = groundY - 24 * 1.55 * s;
+    const off = lerp(26, 2, sm((t - 6.4) / 0.7)) * s;
+    const tx = cx - dir * off, ty = wickY - 6 * s;
+    const nr = [shx + dir * 4 * s - dir * sw * 14 * s, shy + 46 * s];
+    const fr = [shx - dir * 4 * s + dir * sw * 14 * s, shy + 46 * s];
+    const R = P.reach;
+    const nh = [lerp(nr[0], tx, R), lerp(nr[1], ty, R)];
+    const fh = [lerp(fr[0], tx - dir * 5 * s, R), lerp(fr[1], ty + 10 * s, R)];
+
+    arm(shx - dir * 4 * s, shy, fh[0], fh[1], P.sleeve, P.skin);
+
+    ctx.save(); ctx.translate(x, hipY); ctx.rotate(a); ctx.scale(s, s);
+    ctx.fillStyle = P.kurta; ctx.beginPath(); ctx.moveTo(-15, -54); ctx.lineTo(15, -54);
+    ctx.quadraticCurveTo(21, -20, 20, 18); ctx.lineTo(-20, 18); ctx.quadraticCurveTo(-21, -20, -15, -54); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = P.trim; ctx.fillRect(-20, 12, 40, 6); ctx.fillRect(-2, -54, 4, 30);
+    ctx.fillStyle = P.skin; ctx.fillRect(-4.5, -62, 9, 10);
+    ctx.beginPath(); ctx.arc(0, -76, 15, 0, TAU); ctx.fill();
+    ctx.fillStyle = P.hair; ctx.beginPath(); ctx.arc(0, -78, 16, Math.PI, TAU); ctx.closePath(); ctx.fill();
+    if (P.bun) { ctx.beginPath(); ctx.arc(-dir * 9, -95, 7, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = '#1b1030'; ctx.beginPath(); ctx.arc(dir * 6, -75, 1.7, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#1b1030'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(dir * 5, -71, 4, 0.25, Math.PI - 0.25); ctx.stroke();
+    ctx.restore();
+
+    arm(shx + dir * 4 * s, shy, nh[0], nh[1], P.kurta, P.skin);
+
+    const tip = sm((t - 5.8) / 0.4) * (1 - sm((t - 7.1) / 0.3));
+    if (tip > 0) {
+      glow(nh[0], nh[1] - 2 * s, 16 * s, 0.9 * tip);
+      ctx.fillStyle = 'rgba(255,240,200,' + tip + ')'; ctx.beginPath(); ctx.arc(nh[0], nh[1] - 2 * s, 2.6 * s, 0, TAU); ctx.fill();
+    }
+  }
+  function tag(x, y, text, alpha) {
+    if (alpha <= 0) return;
+    ctx.save(); ctx.globalAlpha = alpha;
+    ctx.font = '600 ' + Math.round(13 * clamp(s, 0.85, 1.2)) + 'px Hind, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const w = ctx.measureText(text).width + 18;
+    ctx.fillStyle = 'rgba(13,10,31,0.68)'; ctx.fillRect(x - w / 2, y - 12, w, 24);
+    ctx.fillStyle = '#fff1d6'; ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  /* ---------- fireworks and petals ---------- */
+  const PALS = [
+    [[255, 179, 32], [255, 122, 26], [255, 255, 255]],
+    [[216, 27, 96], [255, 120, 170], [255, 214, 226]],
+    [[120, 200, 255], [200, 160, 255], [255, 255, 255]]
+  ];
+  function burst() {
+    const x = rnd(W * 0.12, W * 0.88), y = rnd(H * 0.12, groundY * 0.55);
+    const pal = PALS[(Math.random() * PALS.length) | 0], n = Math.round(rnd(46, 70));
+    for (let i = 0; i < n; i++) {
+      const an = TAU * i / n + rnd(-0.05, 0.05), sp = rnd(70, 190) * s * (Math.random() < 0.3 ? 0.55 : 1);
+      fw.push({ x, y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 1, decay: rnd(0.45, 0.75), c: pal[(Math.random() * pal.length) | 0] });
+    }
+    flashes.push({ x, y, life: 1 });
+    pop();
+  }
+  function spawnPetals() {
+    const cols = ['#ffb320', '#d81b60', '#ff7a1a', '#fff1d6'];
+    for (let i = 0; i < 130; i++) {
+      petals.push({ x: rnd(0, W), y: rnd(-H * 0.5, -10), vx: rnd(-18, 18), vy: rnd(60, 140), rot: rnd(0, TAU), vr: rnd(-3, 3), size: rnd(4, 8) * clamp(s, 0.8, 1.2), c: cols[(Math.random() * 4) | 0], ph: rnd(0, TAU) });
+    }
+  }
+
+  /* ---------- timeline ---------- */
+  function figProps(t) {
+    const walkP = clamp(t / 4.5, 0, 1);
+    const amp = 1 - sm((t - 4.2) / 0.4);
+    const reach = sm((t - 4.8) / 1.2) * (1 - sm((t - 9) / 1));
+    return { walkP, amp, reach, lean: reach * 0.28, phase: t * 7 };
+  }
+  function step(dt, t) {
+    if (!state.started) return;
+    if (t >= 7.2 && !ev.ign) { ev.ign = 1; tone(523.25, 0, 2.8, 'sine', 0.22); tone(1046.5, 0, 2, 'sine', 0.1); tone(783.99, 0.1, 2.4, 'triangle', 0.08); }
+    if (t >= 7.4 && !ev.cap) { ev.cap = 1; $('caption').hidden = false; }
+    for (let i = 0; i < 8; i++) {
+      if (t >= 8.4 + i * 0.3 && !ev['r' + i]) { ev['r' + i] = 1; if (t < 12) tone(1318.5 + i * 45, 0, 0.5, 'sine', 0.05); }
+    }
+    if (t >= 10.2 && !REDUCE) { nextBurst -= dt; if (nextBurst <= 0) { burst(); nextBurst = rnd(0.55, 1.1); } }
+    if (t >= 11.8 && !ev.gift) { ev.gift = 1; $('giftbar').hidden = false; $('replay').hidden = false; }
+    for (const p of fw) { p.vy += 70 * s * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= p.decay * dt; }
+    fw = fw.filter(p => p.life > 0);
+    for (const f of flashes) f.life -= dt * 5;
+    flashes = flashes.filter(f => f.life > 0);
+    for (const p of petals) { p.y += p.vy * dt; p.x += p.vx * dt + Math.sin(clock * 2 + p.ph) * 0.6; p.rot += p.vr * dt; }
+    petals = petals.filter(p => p.y < H + 20);
+  }
+  function render(t) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const ign = sm((t - 7.2) / 1.2);
+    drawSky(ign); drawSkyline(); drawGround(ign); drawRangoli(ign);
+
+    for (const d of smalls) {
+      const lit = sm((t - (8.4 + d.i * 0.3)) / 0.5);
+      diya(d.x, d.y, d.k, lit, d.ph);
+    }
+    glow(cx, groundY - 40 * s, 300 * s * ign, 0.26 * ign);
+    diya(cx, groundY, 1.55 * s, ign, 0);
+
+    const fp = figProps(t);
+    const p = eo(t / 4.5);
+    const ax = lerp(-70 * s, cx - 96 * s, p), bx = lerp(W + 70 * s, cx + 96 * s, p);
+    const A = { kurta: '#ffb320', trim: '#7a2d0b', sleeve: '#d99410', pants: '#efe3c7', skin: '#c98a5a', hair: '#1b1030', bun: false, phase: fp.phase, amp: fp.amp, reach: fp.reach, lean: fp.lean };
+    const B = { kurta: '#d81b60', trim: '#ffd27a', sleeve: '#a8134a', pants: '#f2e6d0', skin: '#b87a4c', hair: '#1b1030', bun: true, phase: fp.phase + 1.2, amp: fp.amp, reach: fp.reach, lean: fp.lean };
+    if (state.started) {
+      figure(ax, 1, A, t); figure(bx, -1, B, t);
+      const ta = clamp(t / 0.8, 0, 1) * (1 - sm((t - 9.5) / 1.5) * 0.35);
+      tag(ax, groundY - 172 * s, names.s, ta); tag(bx, groundY - 172 * s, names.f, ta);
+    }
+
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const f of flashes) {
+      const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, 90 * s);
+      g.addColorStop(0, 'rgba(255,240,210,' + (0.5 * f.life) + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, 90 * s, 0, TAU); ctx.fill();
+    }
+    ctx.lineCap = 'round'; ctx.lineWidth = 2;
+    for (const q of fw) {
+      ctx.strokeStyle = 'rgba(' + q.c[0] + ',' + q.c[1] + ',' + q.c[2] + ',' + clamp(q.life, 0, 1) + ')';
+      ctx.beginPath(); ctx.moveTo(q.x - q.vx * 0.04, q.y - q.vy * 0.04); ctx.lineTo(q.x, q.y); ctx.stroke();
+    }
+    ctx.restore();
+
+    for (const q of petals) {
+      ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); ctx.fillStyle = q.c;
+      ctx.beginPath(); ctx.ellipse(0, 0, q.size, q.size * 0.55, 0, 0, TAU); ctx.fill(); ctx.restore();
+    }
+  }
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; clock += dt;
+    if (state.started) state.t += dt;
+    if (W && H) { step(dt, state.t); render(state.t); }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- controls ---------- */
+  function jumpToEnd() {
+    state.t = 12; ev = { ign: 1, cap: 1 }; for (let i = 0; i < 8; i++) ev['r' + i] = 1;
+    $('caption').hidden = false;
+  }
+  function begin() {
+    audioInit();
+    $('intro').hidden = true;
+    state.started = true; state.t = 0; ev = {}; nextBurst = 0;
+    if (REDUCE) jumpToEnd();
+  }
+  function replay() {
+    audioInit();
+    fw = []; flashes = []; petals = []; ev = {}; nextBurst = 0;
+    state.started = true; state.t = 0;
+    $('caption').hidden = true; $('giftbar').hidden = true; $('replay').hidden = true;
+    if (REDUCE) jumpToEnd();
+  }
+  let lastFocus = null;
+  function openModal(id, focusId) {
+    lastFocus = document.activeElement;
+    $(id).hidden = false;
+    const f = $(focusId); if (f) f.focus();
+  }
+  function closeModal(id) {
+    $(id).hidden = true;
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  }
+  function openCard() {
+    openModal('card', 'closeCard');
+    if (!petals.length && !REDUCE) spawnPetals();
+    tone(659.25, 0, 1.2, 'sine', 0.12); tone(987.77, 0.12, 1.4, 'sine', 0.1); tone(1318.5, 0.26, 1.8, 'sine', 0.08);
+  }
+  function makerLink() {
+    const f = slug($('mkFriend').value), se = slug($('mkSender').value);
+    let base = '';
+    try { base = location.href.split('#')[0]; } catch (e) { base = ''; }
+    const h = (f || se) ? '#' + (f || 'dost') + (se ? '--' + se : '') : '';
+    $('mkLink').value = base + h;
+    $('mkStatus').textContent = '';
+  }
+  function openMaker() {
+    $('mkFriend').value = names.f === 'Dost' ? '' : names.f;
+    $('mkSender').value = names.s;
+    makerLink();
+    openModal('maker', 'mkFriend');
+  }
+  function copyLink() {
+    const inp = $('mkLink'), txt = inp.value, st = $('mkStatus');
+    const fallback = () => {
+      inp.focus(); inp.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      st.textContent = ok ? 'Copy ho gaya.' : 'Link select ho gaya hai, ab use copy kar lo.';
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => { st.textContent = 'Copy ho gaya.'; }, fallback);
+      } else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  $('startBtn').addEventListener('click', begin);
+  $('replay').addEventListener('click', replay);
+  $('giftbtn').addEventListener('click', openCard);
+  $('closeCard').addEventListener('click', () => closeModal('card'));
+  $('closeMaker').addEventListener('click', () => closeModal('maker'));
+  $('mkFriend').addEventListener('input', makerLink);
+  $('mkSender').addEventListener('input', makerLink);
+  $('mkCopy').addEventListener('click', copyLink);
+  $('mute').addEventListener('click', () => {
+    state.muted = !state.muted;
+    $('mute').textContent = state.muted ? 'Awaaz band' : 'Awaaz chalu';
+    $('mute').setAttribute('aria-pressed', String(state.muted));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (!$('maker').hidden) closeModal('maker'); else if (!$('card').hidden) closeModal('card');
+  });
+  window.addEventListener('hashchange', readHash);
+  window.addEventListener('resize', resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(cv);
+
+  readHash();
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
